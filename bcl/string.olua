@@ -1,0 +1,377 @@
+-- TODO: merge StringHelper into here
+-- TODO: typesafe
+
+@implementation String : Object
+
+-(String) init:obj do
+    self.string = tostring(obj) or ""
+    return self
+end
+
++(String) Empty do
+    --return 1
+    return [[String alloc] init:""]
+end
+
+-(number) Length do
+    return self.string:len()
+end
+
+- ConvertTo:x do
+    if x == 'string' then    
+        return self.string
+    end
+    return nil
+end
+
+- ConvertFrom:x value:v do
+    if x == 'string' then
+        return [[String alloc] init:v]
+    end
+end
+
++(boolean) __eq:a b:b do
+    return [String Equals:a other:b]
+end
+
+- __concat:other do
+    return tostring(self) .. tostring(other)
+end
+
+- __index:t key:k do
+    if type(k) == "number" then
+        return t:Substring(k, 1)
+    end
+    --[[
+    if not r and rawget(System.StringHelper, k) then
+        return function(str, ...)
+            local args = { ... }
+            for k, v in pairs(args) do if System.String.IsString(v) then args[k] = v:ToString() end end
+            
+            local ret = { System.StringHelper[k](str.string, unpack(args)) }
+            local patched = { }
+            for k, v in pairs(ret) do
+                if type(v) == "string" then
+                    patched[k] = System.String:new(v)
+                else
+                    patched[k] = v
+                end
+            end
+            return unpack(patched)
+        end
+    end
+    if not r and rawget(string, k) then
+        return function(str, ...)
+            local args = { ... }
+            for k, v in pairs(args) do if System.String.IsString(v) then args[k] = v:ToString() end end
+            
+            local ret = { string[k](str.string, unpack(args)) }
+            local patched = { }
+            for k, v in pairs(ret) do
+                if type(v) == "string" then
+                    patched[k] = System.String:new(v)
+                else
+                    patched[k] = v
+                end
+            end
+            return unpack(patched)
+        end
+    end
+    --return r or System.__index(self, k)
+    return r]]
+end
+
++(String) Join:sep other:... do
+    return [[String alloc] init:table.concat(arg, sep)]
+end
+
++(String) Concat:... do
+    return [String Join:"" other:arg]
+end
+
++(boolean) IsString:obj do
+    return type(obj) == "table" and obj.ClassName == 'String'
+end
+
++(boolean) Equals:a other:b do
+    return
+        ([String IsString:a] and [String IsString:b] and a.string == b.string) or
+        ([String IsString:a] and type(b) == "string" and a.string == b) or
+        ([String IsString:b] and type(a) == "string" and b.string == a)
+end
+
+-(table) toCharArray do
+    --return [StringHelper ToCharArray:self.string]
+    local s = self.string
+    local t = { }
+    for i = 1, s:len() do
+        table.insert(t, s:sub(i, i))
+    end
+    return t
+end
+
+-(String) Substring:start len:len do
+    --return [[String alloc] init:[StringHelper Substring:self.string start:start len:(len or self.string:len())]]
+    return [[String alloc] init:self.string:sub(start, len)]
+end
+
+-(string) toString do
+    return self.string or [super toString]
+end
+
++ Compare:a b:b do
+    @throw [[NotImplementedException alloc] init]
+    --local a = System.String.IsString(a) and a.string or a
+    --local b = System.String.IsString(b) and b.string or b
+    --return System.Globalization.CultureInfo.CurrentCulture.CompareInfo.Compare(a, b, System.Globalization.CompareInfo.None)
+end
+
++ CompareTo:a b:b do
+    return a:Compare(b)
+end
+
+-(number) IndexOf:str startIndex:pos do
+    --return [StringHelper IndexOf:str startIndex:pos string:self.string]
+    
+    local s = self.string
+    local find = tostring(str)
+    pos = pos or 1
+    for i = pos, s:len() do
+        --print(s:sub(i, i + find:len() - 1), i, find:len(), find)
+        if s:sub(i, i + find:len() - 1) == find then
+            return i
+        end
+    end
+    return -1
+end
+
+-(String) Trim do
+    return [[self TrimStart] TrimEnd]
+    --return [StringHelper Trim:self.string]
+end
+
+- Clone do
+    return [[String alloc] init:self.string]
+end
+
+- Copy do
+    return [self Clone]
+end
+
+-(boolean) EndsWith:ends do
+    --return [StringHelper EndsWith:ends string:self.string]
+    
+    -- Adding one because 4 - 2 == 2, but IndexOf('asdf', 'df') == 3
+    --print([self LastIndexOf:ends], self.string:len(), ends:len(), self.string:len()-ends:len()+1)
+    return [self LastIndexOf:ends] == self.string:len() - ends:len() + 1
+end
+
+-(boolean) StartsWith:starts do
+    --return [StringHelper StartsWith:starts string:self.string]
+    return [self IndexOf:starts] == 1
+end
+
++ Format:str params:... do
+    -- Note: Not .NET style format - C/printf style
+    --print(unpack(arg))
+    return [[String alloc] init:string.format(tostring(str), unpack(arg))]
+end
+
+- getEnumerator do
+    local function iterator(t, i)
+        i = i + 1
+        local c = t.string:sub(i, i)
+        if not c or c == "" then
+            return nil
+        else
+            return i, c
+        end
+    end
+
+    return iterator, self, 0
+end
+
+- Insert:index string:str do
+    if index < 0 then
+        index = self.string:len() - index
+    end
+    return [[String alloc] init:self.string:sub(1, index) .. str .. self.string:sub(index + 1)]
+end
+
++ IsNullOrEmpty:str do
+    return str == nil or str.string == nil or str.string == ""
+end
+
++ IsNullOrWhitespace:str do
+    local function isWs(s)
+        local flag = s:len() > 0 and true or false
+        for i = 1, s:len() do
+            if [Char IsWhitespace:(s:sub(i, i))] == false then
+                flag = false
+            end
+        end
+        return flag
+    end
+
+    return str == nil or str.string == nil or isWs(str.string)
+end
+
+- LastIndexOf:find pos:pos do
+    --return [StringHelper LastIndexOf:str pos:pos string:self.string]
+    local s = self.string
+    pos = pos or 1
+    for i = s:len(), pos, -1 do
+        if s:sub(i, i + find:len() - 1) == find then
+            return i
+        end
+    end
+    return -1
+end
+
+- LastIndexOfAny:... do
+    local chars = arg
+    if chars[1] and type(chars[1]) == "table" then
+        chars = chars[1]
+    end
+    --return [StringHelper LastIndexOfAny:chars string:self.string]
+    local index = -1
+    for k, v in pairs(chars) do
+        local i = [self IndexOf:v]
+        if i < index or index == -1 then
+            index = i
+        end
+    end
+    return index
+end
+
+- PadLeft length:num char:char do
+    char = char or ' '
+    local new = self.string
+    while new:len() < num do
+        new = char .. new
+    end
+    return [[String alloc] init:new]
+end
+
+- PadRight length:num char:char do
+    char = char or ' '
+    local new = self.string
+    while new:len() < num do
+        new = new .. char
+    end
+    return [[String alloc] init:new]
+end
+
+- Remove start:start count:count do
+    if start - 1 < 0 then
+        @throw [Exception createWithMessage:"Invalid start"]
+    end
+    if not count then
+        return [[String alloc] init:self.string:sub(1, start - 1)]
+    end
+    return [[String alloc] init:(self.string:sub(1, start - 1) .. self.string:sub(count + 1))]
+end
+
+- Replace:old new:new do
+    --return [[String alloc] init:[StringHelper Replace:old new:new string:self.string]]
+    local s2 = [self Clone]
+    while [s2 IndexOf:old] ~= -1 do
+        s2 = [s2 Substring:1 
+                len:(s2.string:len() - [s2 IndexOf:old] - 1)] 
+            .. new 
+            .. [s2 Substring:([s2 IndexOf:old] + old:len())]
+    end
+    return s2
+end
+
+- Split:... do
+    return [[String alloc] init:[StringHelper Split:unpack(arg)    string:self.string]]
+end
+
+- ToLower do
+    return [[String alloc] init:self.string:lower()]
+end
+
+- ToUpper do
+    return [[String alloc] init:self.string:upper()]
+end
+
+-(String) TrimStart do
+    --return [[String alloc] init:[StringHelper TrimStart:self.string]]
+    local s2 = self.string
+    while s2:sub(1, 1) == " " or s2:sub(1, 1) == "\t" or s2:sub(1, 1) == "\r" or s2:sub(1, 1) == "\n" do
+        s2 = s2:sub(2)
+    end
+    return [[String alloc] init:s2]
+end
+
+-(String) TrimEnd do
+    --return [[String alloc] init:[StringHelper TrimEnd:self.string]]
+    local s2 = self.string
+    while s2:sub(-1, -1) == " " or s2:sub(-1, -1) == "\t" or s2:sub(-1, -1) == "\r" or s2:sub(-1, -1) == "\n" do
+        s2 = s2:sub(1, -2)
+    end
+    return [[String alloc] init:s2]
+end
+
+- TrimChars:... do
+    --return [[String alloc] init:[StringHelper TrimChars:... string:self.string]]
+    local s2 = self.string
+    local chars = arg
+    if #chars > 0 and type(chars[1]) == "table" then
+        chars = chars[1]
+    end
+    while true do
+        local has = false
+        for k, char in pairs(chars) do
+            if s2:sub(1, 1) == char then
+                has = true
+                break
+            end
+        end
+        if has then
+            s2 = s2:sub(2)
+        else
+            break
+        end
+    end
+    while true do
+        local has = false
+        for k, char in pairs(chars) do
+            if s2:sub(-1, -1) == char then
+                has = true
+                break
+            end
+        end
+        if has then
+            s2 = s2:sub(1, -2)
+        else
+            break
+        end
+    end
+    return [[String alloc] init:s2]
+end
+
++(string) ToNativeString:obj do
+    if [String IsString:obj] then return obj.string end
+    if type(obj) == "string" then return obj end
+    @throw [[Exception alloc] init:"Not a valid string"]
+end
+
+- getHashCode do
+    local ret = 0
+    for k, v in self:getEnumerator() do
+        ret = [Bit Xor:ret,string.byte(v)]
+    end
+    return ret
+end
+
+-(String) Repeat:s number:n do
+    local s2 = ""
+    for i = 1, n do
+        s2 = s2 .. s
+    end
+    return [[String alloc] init:s2]
+end
+
+@end

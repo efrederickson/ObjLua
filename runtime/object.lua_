@@ -1,0 +1,87 @@
+
+error[[This file is outdated. Use object.olua instead]]
+
+-- this can easily be re-written into ObjLua
+-- In the future, it probably will be. Once i finish the ObjLua parser/generator
+
+--require'runtime'
+
+local object = objlua.createClass"Object"
+
+objlua.setStaticMethod(object, "alloc", function(self, ...)
+    return objlua.instantiateClass(self.ClassName)
+end)
+
+objlua.setMethod(object, "init", function(...)
+    return self
+end)
+
+objlua.setMethod(object, "getHashCode", function(...)
+    error("Not yet implemented")
+end)
+
+objlua.setMethod(object, "toString", function(...)
+    return "<ObjLua Class: " .. self.ClassName .. ">"
+end)
+
+objlua.setMethod(object, "dealloc", function(...)
+    return objlua.deallocClass(self)
+end)
+
+objlua.setMethod(object, "getEnumerator", function(...)
+    --@throw([Exception createWithMessage:"Not yet implemented"])
+    error("Not yet implemented")
+end)
+
+objlua.setMethod(object, "__index", function(key)
+    return nil
+end)
+
+objlua.setMethod(object, "__newindex", function(key, value)
+    --rawset(self, key, value)
+    --getmetatable(objlua.getClass(self.ClassName)).fields[key] = value
+    
+    -- NOTE: THIS DOES NOT AFFECT CREATING OBJECTS
+    -- DO NOT CREATE NEW FIELDS USING RAWSET/GETMETATABLE HERE
+    -- IT'S ALL HANDLED BY THE RUNTIME ENGINE
+    
+    -- IF YOU WANT TO CONTROL THE CREATION OF A NEW FIELD, RETURN EITHER
+    -- TRUE OR FALSE FROM THIS FUNCTION. IF THIS FUNCTION DOES NOT EXIST OR
+    -- RETURN SOMETHING OTHER THAN FALSE, THE RUNTIME WILL CONTINUE WITH THE
+    -- ADDING OF A FIELD
+    
+end)
+
+objlua.setStaticMethod(object, "ConvertTo", function(a, type)
+    return nil
+end)
+ 
+--[[ just some simple tests to make sure the basics work
+local o = objlua.instantiateClass("Object")
+print("<<<<", self)
+o.a = 1
+o.b = function() end
+print("<<<<", self, a)
+-- or: objlua.setMethod(o, "test", function(self, x) print("test", self, x) end)
+
+objlua.setStaticField(o, "y", 'a test static field', false)
+objlua.setStaticField(o, "z", 'a private test static field', true)
+print('o.y', o.y, "o.z (should be nil)", o.z)
+objlua.setMethod(o, "test", function() print("test", self, x, y, z, self.z) end, { "x" })
+print("<<<<", self)
+o:test(1)
+print("<<<<", self)
+o.test{x=1,asdf='wat'} -- ooh look, implicit self :D
+print("<<<<", self)
+objlua.setStaticMethod(o, "test2", function() assert(self==nil) print("test2", x, y) end, { "x" })
+o.test2(2)
+o.test2{x=2}
+object.test2(3)
+
+print(o)
+
+local l = dofile'../../laudanum.lua'
+l.HookFunction(object, "toString", function(self, ...) return "HAXXXED" end)
+print(o, o.a, o.b)
+for k, v in pairs(o) do print(k, v) end
+--]]

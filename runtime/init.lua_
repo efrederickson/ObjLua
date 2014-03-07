@@ -1,0 +1,3 @@
+error("old runtime stuff here...")
+require'objlua.runtime.runtime'
+require'objlua.bcl'

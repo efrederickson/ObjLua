@@ -1,0 +1,5 @@
+@implementation Char
++(boolean) IsWhitespace:char do
+    return char == ' ' or char == '\n' or char == '\r' or char == '\t'
+end
+@end

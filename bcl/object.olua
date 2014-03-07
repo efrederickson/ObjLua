@@ -1,0 +1,96 @@
+@implementation Object
+
++ alloc do
+    local r = objlua.instantiateClass(self.ClassName)
+    assert(r, "Unable to instantiate class")
+    assert(getmetatable(r).__instantiated, "Runtime corruption error for class " .. self.ClassName)
+    return r
+end
+
+- init do
+    return self
+end
+
+- getHashCode do
+    error("Not yet implemented")
+end
+
+- hash do
+    return [self getHashCode]
+end
+
+-(string) toString do
+    if getmetatable(self).__instantiated == nil then
+        error("Runtime corruption error for class " .. self.ClassName)
+    elseif getmetatable(self).__instantiated then
+        return "<ObjLua Class: " .. self.ClassName .. ">"
+    else
+        return "<ObjLua uninstantiated class>"
+    end
+end
+
+- dealloc do
+    return objlua.deallocClass(self)
+end
+
+- getEnumerator do
+    --@throw([Exception createWithMessage:"Not yet implemented"])
+    error("Not yet implemented")
+end
+
+- __index do
+    return nil
+end
+
+- __newindex:self key:key value:value do
+    --rawset(self, key, value)
+    --getmetatable(objlua.getClass(self.ClassName)).fields[key] = value
+    
+    -- NOTE: THIS DOES NOT AFFECT CREATING OBJECTS
+    -- DO NOT CREATE NEW FIELDS USING RAWSET/GETMETATABLE HERE
+    -- IT'S ALL HANDLED BY THE RUNTIME ENGINE
+    
+    -- IF YOU WANT TO CONTROL THE CREATION OF A NEW FIELD, RETURN EITHER
+    -- TRUE OR FALSE FROM THIS FUNCTION. IF THIS FUNCTION DOES NOT EXIST OR
+    -- RETURN SOMETHING OTHER THAN FALSE, THE RUNTIME WILL CONTINUE WITH THE
+    -- ADDING OF A FIELD
+    
+end
+
+- objectForKey:(String)key do
+    return self[key]
+end
+
+@end
+
+-- Object -> id
+objlua.createClassAlias("Object", "id")
+
+--[[ just some simple tests to make sure the basics work
+local o = objlua.instantiateClass("Object")
+
+o.a = 1
+o.b = function() end
+
+-- or: objlua.setMethod(o, "test", function(self, x) print("test", self, x) end)
+
+objlua.setStaticField(o, "y", 'a test static field', false)
+objlua.setStaticField(o, "z", 'a private test static field', true)
+print('o.y', o.y, "o.z (should be nil)", o.z)
+objlua.setMethod(o, "test", function() print("test", self, x, y, z, self.z) end, { "x" }, nil, { [1] = "x" })
+print(Object.test, o.test)
+o:test(3)
+o.test{x=1,asdf='wat'} -- ooh look, implicit self :D
+
+objlua.setStaticMethod(o, "test2", function() assert(self~=nil) print("test2", x, y) end, { "x" })
+o.test2(2)
+o.test2{x=2}
+Object.test2(3)
+
+print(o)
+
+--local l = dofile'../../laudanum.lua'
+--l.HookFunction(object, "toString", function(self, ...) return "HAXXXED" end)
+--print(o, o.a, o.b)
+for k, v in pairs(o) do print(k, v) end
+--]]

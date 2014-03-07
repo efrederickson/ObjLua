@@ -1,0 +1,71 @@
+--[[
+ObjLua Runtime documentation for 1.0
+
+needs some work... especially for actual classes and such (no metatable events)
+but this should give an idea
+]]
+
+-- The runtime defines a static value, __objlua__. You can use this for testing if you are running
+-- under objlua, or some other environment.
+_G.__objlua__ = true
+
+-- Table copying function
+local function deepcopy(orig)
+
+-- Wraps a method function for handling of self, as well as mapping arguments
+-- to local variables
+local function wrapFunction(func, args)
+
+-- Wraps a static function for mapping arguments to local variables
+local function wrapFunction2(func, args)
+
+-- returns a function that implicitly creates 'self'
+-- maps static fields to variables, defines __index to allow for implicit 
+-- class items such as functions/fields
+local function wrapMethodForImmediateCalling(self, func)
+
+-- Same as wrapMethodForImmediateCalling, but doesn't create the implicit 'self' argument
+local function wrapStaticFunctionForImmediateCalling(self, func)
+
+-- returned table of objlua runtime
+objlua = { }
+
+-- class table. Don't use this.
+objlua.classes = { }
+
+-- Returns a class from its name
+function objlua.getClass(name)
+
+-- Checks if the passed variable is a class
+function objlua.isClass(class)
+
+-- Returns the specified method, if it exists for that class
+function objlua.getMethod(class, name)
+
+-- Returns if the specified method exist for the specified class
+function objlua.doesMethodExist(class, name)
+
+-- Adds/redefines a method for ALL INSTANCES of the class. 
+-- Args is optional. If not defined, the function does not get automapped variables
+function objlua.setMethod(class, methodName, func, args)
+
+-- Same as objlua.setMethod, but for static functions
+function objlua.setStaticMethod(class, methodName, func, args)
+
+-- Creates/redefines a static field
+function objlua.setStaticField(class, field, value, isPrivate)
+
+-- Creates a new, empty class, and returns it
+function objlua.createClass(name, inherits, implements)
+
+-- Creates a new instance of a class 
+function objlua.instantiateClass(name)
+
+-- Destroys the class, rendering it an empty table. Then returns the destroyed class
+function objlua.deallocClass(class)
+
+-- Return true if the class claims to implement the interfaceName protocol
+function objlua.doesClassImplement(class, interfaceName)
+
+-- Rturns true if the class claims to inherit the specified super class name
+function objlua.doesClassInherit(class, super)

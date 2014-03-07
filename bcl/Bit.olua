@@ -1,0 +1,115 @@
+-- load native bit libraries
+local bit = bit or bit32
+if not bit then
+    pcall(function() if not bit then bit = require"bit" end end)
+end
+
+local ibit = require'objlua.bcl.InternalBit'
+if not bit then
+    bit = ibit -- pure lua implementation
+end
+
+if bit ~= ibit then
+    for k, v in pairs(ibit.bit32) do
+        if not bit[k] then
+            --print(k, v)
+            bit[k] = v
+        end
+    end
+    for k, v in pairs(ibit.bit) do
+        if not bit[k] then
+            --print(k, v)
+            bit[k] = v
+        end
+    end
+end
+
+setmetatable(bit, { __index = function(t, k) @throw [Exception createWithMessage:"Bit function not found: " .. tostring(k)] end })
+
+@implementation Bit
+
+- init do
+@throw [Exception createWithMessage:"Cannot create an instance of Bit"]
+end
+
++ ToBit:... do 
+    return bit.tobit(unpack(arg))
+end
+
++ ToHex:... do 
+    return bit.tohex(unpack(arg))
+end
+
++ BAnd:... do 
+    return bit.band(unpack(arg))
+end
+
++ BOr:... do 
+    return bit.bor(unpack(arg))
+end
+
++ BXor:... do 
+    return bit.bxor(unpack(arg))
+end
+
++ Xor:... do 
+    return bit.bxor(unpack(arg))
+end
+
++ BNot:... do 
+    return bit.bnot(unpack(arg))
+end
+
++ LShift:... do 
+    return bit.lshift(unpack(arg))
+end
+
++ RShift:... do 
+    return bit.shift(unpack(arg))
+end
+
++ Extract:... do 
+    return bit.extract(unpack(arg))
+end
+
++ Replace:... do 
+    return bit.replace(unpack(arg))
+end
+
++ BSwap:... do 
+    return bit.bswap(unpack(arg))
+end
+
++ Swap:... do 
+    return bit.bswap(unpack(arg))
+end
+    
++ RRotate:... do 
+    return bit.rrotate(unpack(arg))
+end
+
++ ROr:... do 
+    return bit.ror(unpack(arg))
+end
+
++ LRotate:... do 
+    return bit.rol(unpack(arg))
+end
+
++ ROL:... do 
+    return bit.tohex(unpack(arg))
+end
+
++ ARShift:... do 
+    return bit.arshift(unpack(arg))
+end
+
++ BTest:... do 
+    return bit.btest(unpack(arg))
+end
+
++ __index:key do
+    return bit[key]
+end
+
+@end

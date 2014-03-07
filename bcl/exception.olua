@@ -1,0 +1,52 @@
+-- TODO: String -> String
+
+@implementation Exception : Object
+
+- init:(String)message innerException:(Exception)innerException do
+    self.stackTrace = debug.traceback()
+    self.message = message
+    self.innerException = innerException
+    return self
+end
+
+- (string) toString do
+    return [self Message] or 
+        [super toString] or
+        "<Unknown exception>"
+end
+
+- (String) StackTrace do
+    return self.stackTrace
+end
+
+- (String) Message do
+    return self.message
+end
+
+- (Exception) InnerException do
+    return self.innerException
+end
+
+- (Exception) GetBaseException do
+    if not self.InnerException then return self end
+    return [self.InnerException GetBaseException]
+end
+
++ throw:(Exception)ex do
+    -- called by the runtime...
+    local msg = "Exception: " .. [ex toString] 
+        .. "\n" .. [[ex StackTrace] toString]
+    error(msg)
+end
+
++ createWithMessage:(String)message innerException:(Exception)ex do
+    local s = [self alloc]
+    --assert(message)
+    return [s init:message innerException:ex]
+end
+
++ create do
+    return [self alloc]
+end
+
+@end
