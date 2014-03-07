@@ -1,7 +1,7 @@
 local p = require'objlua.parser'
 local fmt = require'objlua.formatlua'
-
-local code = io.open("objlua/runtime.olua", 'rb')
+--[[
+local code = io.open("objlua/runtime51.olua", 'rb')
 assert(code)
 local c = code:read'*a'
 code:close()
@@ -10,7 +10,7 @@ assert(x)
 f=io.open("a.out", "wb")
 f:write(fmt(y))
 f:close()
-
+]]
 x, y = p.Parse[=[
 
 local function what() print"what?" end
@@ -42,10 +42,24 @@ end
     return "hola, senor"
 end
 
+- setX:val do
+    --print("setX", val, self)
+    self._x = val
+end
+
+- x do
+    --print("_x: ", self._x)
+    return self._x
+end
+
 @end
 
 
 local x = [[test alloc] init]
+
+x.x = 4
+print("x.x", x.x, x.x());
+print("[x x]", [x x]);
 
 --[x a:"ha"]
 --[x a];

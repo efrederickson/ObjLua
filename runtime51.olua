@@ -453,6 +453,13 @@ function objlua.getClass(name)
         if getmetatable(v).ClassName == name then
             return v
         end
+        if getmetatable(v).ClassNameAliases then
+            for k2, v2 in pairs(getmetatable(v).ClassNameAliases) do
+                if v2 == name then
+                    return v
+                end
+            end
+        end
     end
     return nil
 end
@@ -544,6 +551,18 @@ function objlua.createClass(name, inherits, implements)
             local sfield = getmetatable(objlua.getClass(getTable().ClassName)).staticFields[k]
             if sfield and sfield.Private == false then return sfield.Value end
             
+            --[[
+                TODO: so that OBJECT.FIELD_WHICH_IS_A_PROPERTY automatically evaluates instead of returning a function
+                
+            if type(k) == 'string' then
+                --print("checking for prop indexer...", k)
+                local property = getmetatable(objlua.getClass(getTable().ClassName)).methods["set" .. k:sub(1,1):upper() .. k:sub(2)]
+                local index_method = getmetatable(objlua.getClass(getTable().ClassName)).methods[k]
+                if property and index_method then
+                    return wrapMethodForImmediateCalling(t, getmetatable(getTable()).methods[k], getTable())()
+                end
+            end]]
+            
             --print("inherits: ", getmetatable(getTable()).inherits or "nil")
             --print("key", k, getmetatable(getTable()).methods[k], wrapMethodForImmediateCalling(t, getmetatable(getTable()).methods[k], getTable()))
             
@@ -572,13 +591,23 @@ function objlua.createClass(name, inherits, implements)
 		__lt = function(self, other) return [self __lt:other] end,
 		__le = function(self, other) return [self __le:other] end,
         __eq = function(a, b) return [a __eq:b] end,
-		__newindex = function(self, key, value) 
+		__newindex = function(self, key, value)
             if type(value) == 'function' then
                 -- wrapFunction(func, args, returnType, funcName, argNumMap)
                 value = wrapFunction(value, { }, nil, key, nil)
                 getmetatable(self).methods[key] = value
                 return objlua.setMethod(self, key, value)
             end
+            
+            if type(key) == 'string' then
+                --print("checking for prop...", key)
+                local property = self["set" .. key:sub(1,1):upper() .. key:sub(2)]
+                if property then
+                    --print(self)
+                    property(self, value)
+                end
+            end
+            
             local x = self.__newindex 
                 and self.__newindex(self, key, value) or nil
             if x == nil or x then
@@ -592,6 +621,7 @@ function objlua.createClass(name, inherits, implements)
         methods = { },
         static = { },
         ClassName = name,
+        ClassNameAliases = { },
         fields = { },
         staticFields = { },
         inherits = inherits,
@@ -633,8 +663,7 @@ function objlua.doesClassInherit(class, super)
 end
 
 function objlua.createClassAlias(class, alias)
-    --- TODO
-    --table.insert(objlua.classes, class)
+    table.insert(getmetatable(objlua.getClass(class.ClassName or class)).ClassNameAliases, alias)
 end
 
 return objlua

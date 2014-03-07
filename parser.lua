@@ -812,8 +812,9 @@ local function Parse(src, chunkName)
 
 	function ParseSuffixedExpr(scope, onlyDotColon)
 		--base primary expression
+        
 		local st, prim = ParsePrimaryExpr(scope)
-		if not st then return false, prim end
+        if not st then return false, prim end
 		--
 		while true do
 			local tokenList = {}
@@ -977,6 +978,7 @@ local function Parse(src, chunkName)
             node.Object = object
             node.Arguments = arguments
             node.Tokens = tokenList
+            
             return true, node
             
 		elseif tok:Is('String') then

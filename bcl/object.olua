@@ -25,7 +25,7 @@ end
     elseif getmetatable(self).__instantiated then
         return "<ObjLua Class: " .. self.ClassName .. ">"
     else
-        return "<ObjLua uninstantiated class>"
+        return "<ObjLua uninstantiated class: " .. self.ClassName .. ">"
     end
 end
 
@@ -59,6 +59,10 @@ end
 
 - objectForKey:(String)key do
     return self[key]
+end
+
+- class do
+    return objlua.getClass(self.ClassName)
 end
 
 @end
