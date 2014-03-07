@@ -63,6 +63,7 @@ end
 - class do
     return objlua.getClass(self.ClassName)
 end
+@alias(class, Type)
 
 @end
 

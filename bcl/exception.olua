@@ -1,9 +1,10 @@
--- TODO: String -> String
+local STP = require'ObjLua.StackTracePlus'
 
 @implementation Exception : Object
+@static (boolean) UseStackTracePlus = true;
 
 - init:(String)message innerException:(Exception)innerException do
-    self.stackTrace = debug.traceback()
+    self.stackTrace = (UseStackTracePlus and STP and STP.stacktrace()) or (debug and debug.traceback()) or ""
     self.message = message
     self.innerException = innerException
     return self

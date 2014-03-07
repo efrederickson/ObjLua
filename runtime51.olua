@@ -301,6 +301,10 @@ local function wrapMethodForImmediateCalling(self, func, otherSuper)
         end]]
         setmetatable(env, mt)
         
+        --if not getmetatable(env.self).__instantiated and not getmetatable(env.super).__instantiated then
+        --    error("cannot do dis fo u ")
+        --end
+        
         local ret = { func(unpack(arg)) }
         assert(ret)
         
@@ -542,9 +546,6 @@ function objlua.createClass(name, inherits, implements)
             if k == 'ClassName' then
                 return getmetatable(getTable()).ClassName
             end
-            if k == 'Type' then
-                return objlua.getClass(getmetatable(getTable()).ClassName)
-            end
             local static = getmetatable(objlua.getClass(getTable().ClassName)).static[k]
             if static then return wrapStaticFunctionForImmediateCalling(t, static, getTable()) end
             
@@ -570,7 +571,7 @@ function objlua.createClass(name, inherits, implements)
             
             return (getmetatable(getTable()).methods[k] and wrapMethodForImmediateCalling(t, getmetatable(getTable()).methods[k], getTable()))
                 or (getmetatable(objlua.getClass(getTable().ClassName)).methods[k] and wrapMethodForImmediateCalling(t, getmetatable(objlua.getClass(getTable().ClassName)).methods[k], getTable()))
-                or getmetatable(getTable()).fields[k]
+                or (getmetatable(getTable()).fields[k])
                 or (getmetatable(getTable()).inherits 
                     and objlua.getForASubclass(t, objlua.getClass(getmetatable(getTable()).inherits), k))
                 --or (getmetatable(getTable()).methods['__index'] WHY MUST yOU FAIL?? IT MAKES NO SENSE !!! TODO FIXME
@@ -606,6 +607,11 @@ function objlua.createClass(name, inherits, implements)
                     --print(self)
                     property(self, value)
                 end
+            end
+            
+            local sf = getmetatable(objlua.getClass(self.ClassName)).staticFields
+            if sf[key] and sf[key].Private == false then
+                sf[key].Value = value
             end
             
             local x = self.__newindex 

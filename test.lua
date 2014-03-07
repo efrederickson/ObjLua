@@ -55,7 +55,9 @@ end
 @end
 
 
-local x = [[test alloc] init]
+local x = [test alloc]
+print(getmetatable(x).ClassName, getmetatable(x).__instantiated, x.init)
+x = [x init]
 
 x.x = 4
 print("x.x", x.x, x.x());
