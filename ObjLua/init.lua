@@ -75,7 +75,7 @@ local function oluaload(modulename)
 			file:close()
 			return chunk
 		end
-		errmsg = errmsg.."\n\tno file '"..filename.."' (checked with custom loader)"
+		errmsg = errmsg.."\n\tno file '"..filename.."' (checked with ObjLua loader)"
 	end
 	return errmsg
 end
