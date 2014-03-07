@@ -16,7 +16,7 @@ x, y = p.Parse[=[
 local function what() print"what?" end
 
 @implementation test : Object
-
+@alias(a, XYZ)
 @static (number) something = 4;
 @static something2 = 'mwahaha';
 
@@ -67,7 +67,7 @@ print("[x x]", [x x]);
 
 [x a:'hoho']
 x:a{a='haha'}
-x:a("hehe")
+x:XYZ("hehe")
 
 x.y = function(potato) assert(self) assert(potato) return potato+5 end
 --print("Y:",getmetatable(objlua.getClass'test').methods['y'])

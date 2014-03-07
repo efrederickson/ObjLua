@@ -556,7 +556,11 @@ local function Format_Lua(ast)
             out = out .. ")"
         --elseif statement.AstType == 'ObjLuaPropertyStatement' then
         --    out = joinStatementsSafe(out, "
-            
+        
+        elseif statement.AstType == 'ObjLuaAlias' then
+            out = joinStatementsSafe(out, "objlua.createMethodAlias(")
+            out = out .. "\"" .. statement.Class.Name .. "\""
+            out = out .. ", \"" .. statement.AliasedMethod .. "\", \"" .. statement.Alias .. "\")"
         elseif statement.AstType == 'TryStatement' then
             
             out = joinStatementsSafe(out, "local __objlua_trycatch_retargs; local __objlua_trycatch_args_ = { pcall(function()")

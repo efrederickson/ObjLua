@@ -38,3 +38,8 @@ end
 then, to use:
 t.property = value    :: runtime changes to [t setProperty:value]
 [t property] or t.property()   :: t.property just returns the function pointer. TODO. doubt it will get fixed though...
+
+
+Method alias:
+@alias("toString", "TOSTRINGALIAS") --> objlua.createMethodAlias(<classname>, "toString", "TOSTRINGALIAS")
+@alias (hash, getHashCode)

@@ -666,4 +666,8 @@ function objlua.createClassAlias(class, alias)
     table.insert(getmetatable(objlua.getClass(class.ClassName or class)).ClassNameAliases, alias)
 end
 
+function objlua.createMethodAlias(class, methodName, alias)
+    objlua.getClass(class)[alias] = function(...) return objlua.getClass(class)[methodName](...) end
+end
+
 return objlua

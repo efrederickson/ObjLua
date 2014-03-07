@@ -12,12 +12,11 @@ end
 end
 
 - getHashCode do
-    error("Not yet implemented")
+    return tostring(getmetatable(self))
+    --error("Not yet implemented")
 end
 
-- hash do
-    return [self getHashCode]
-end
+@alias(getHashCode, hash)
 
 -(string) toString do
     if getmetatable(self).__instantiated == nil then

@@ -337,7 +337,7 @@ local function Lex(src)
 
             elseif c == '@' then
                 -- TODO: more keywords
-                local str = consumeUntil(' \t\r\n')
+                local str = consumeUntil(' \t\r\n(')
                 if str == "@interface" then
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
                 elseif str == "@implementation" then
@@ -357,6 +357,8 @@ local function Lex(src)
                 elseif str == "@static" then
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
                 elseif str == "@property" then
+                    toEmit = { Type = 'ObjLuaSymbol', Data = str }
+                elseif str == "@alias" then
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
                 else
                     generateError("Unexpected Symbol `"..c.."` in source.", 2)
@@ -1343,8 +1345,30 @@ local function Parse(src, chunkName)
                 table.insert(stmts, node)
                 
                 if tok:Peek().Data == ';' then tok:Get(tokenList) end
+            elseif tok:ConsumeObjLuaSymbol('@alias', tokenList) then
+                if not tok:ConsumeSymbol('(', tokenList) then
+                    return false, GenerateError("'(' expected")
+                end
+                
+                local name1 = tok:Get(tokenList)
+                if not tok:ConsumeSymbol(',', tokenList) then
+                    return false, GenerateError("',' expected")
+                end
+                
+                local name2 = tok:Get(tokenlist)
+                
+                if not tok:ConsumeSymbol(')', tokenList) then
+                    return false, GenerateError("')' expected")
+                end
+                
+                local node = { AstType = 'ObjLuaAlias',
+                    Class = class,
+                    Alias = name2.Constant or name2.Data,
+                    AliasedMethod = name1.Constant or name1.Data,
+                }
+                table.insert(stmts, node)
             else
-                return false, GenerateError("Expected '-', '+', '@static', or '@end'")
+                return false, GenerateError("Expected '-', '+', '@static', '@alias', or '@end'")
             end
         end
         if not tok:ConsumeObjLuaSymbol('@end', tokenList) then
