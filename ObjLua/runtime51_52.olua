@@ -1,5 +1,29 @@
-local compat_env = require'ObjLua.compat-env'
-local getfenv, setfenv = compat_env.getfenv, compat_env.setfenv
+--[[
+ObjLua Runtime for Lua 5.1 and 5.2
+Copyright (C) 2013 Elijah Frederickson
+
+An entire ObjLua class is proxied to metatable magic :)
+
+No need to call methods with ':' syntax, the 'self' arg is (theoretically, heh) automatically handled!
+
+TODO: Fix static fields being nil from inside class functions
+    e.g.: function <class>.a() return self.asampleprivatestaticfield end
+Methods/fields -> properties
+Non-named arguments with indexes of [1], [2], etc CANNOT be mapped :( FIX
+Vararg functions to have '...' var, not just 'arg'
+Multiple return value arg checking (huh? oh right: return x,y only checks x against the return type)
+
+]]
+
+local _VERSION = _VERSION
+local getfenv
+
+if _VERSION:match"5.2" then
+    local compat_env = require'ObjLua.compat-env'
+    local getfenv = compat_env.getfenv
+else
+    getfenv = _G.getfenv
+end
 
 _G.__objlua__ = true
 
