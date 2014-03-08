@@ -8,7 +8,7 @@ local band, rrotate, bxor, rshift, bnot =
 
 local string, setmetatable, assert = string, setmetatable, assert
 
-_ENV = nil
+--_ENV = nil
 
 -- Initialize table of round constants
 -- (first 32 bits of the fractional parts of the cube roots of the first

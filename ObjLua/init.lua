@@ -90,8 +90,10 @@ table.insert(package.loaders, 2, oluaload)
 
 if _VERSION:match('5.1') then
     require'objlua.runtime51'
+elseif _VERSION:match('5.2') then
+    require'objlua.runtime52'
 else
-    error("Unsupported Lua version")
+    error("Unsupported Lua version (" .. _VERSION .. ")")
 end
 require'objlua.bcl'
 
