@@ -1,4 +1,4 @@
-local STP = require'ObjLua.StackTracePlus'
+local STP = require'ObjLua.lib.StackTracePlus'
 
 @implementation Exception : Object
 @static (boolean) UseStackTracePlus = true;

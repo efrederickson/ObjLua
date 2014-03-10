@@ -19,7 +19,7 @@ local _VERSION = _VERSION
 local getfenv
 
 if _VERSION:match"5.2" then
-    local compat_env = require'ObjLua.compat-env'
+    local compat_env = require'ObjLua.lib.compat-env'
     local getfenv = compat_env.getfenv
 else
     getfenv = _G.getfenv

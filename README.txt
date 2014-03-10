@@ -3,7 +3,8 @@ Compiles into Lua, with a Runtime (implemented in ObjLua) and a class library.
 
 License: WTFPL
 
-
+TODO:
+some sort of garbage collection
 
 Eventual help on ObjLua, currently unsorted references/notes
 Large parts are still mostly unimplemented or buggy. I'm slowly working on it though. 

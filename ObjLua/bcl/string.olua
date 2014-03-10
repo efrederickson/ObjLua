@@ -1,11 +1,14 @@
--- TODO: merge StringHelper into here
 -- TODO: typesafe
 
 @implementation String : Object
 
 -(String) init:obj do
-    self.string = tostring(obj) or ""
+    self.string = tostring(obj or "") or ""
     return self
+end
+
++(String) createWithString:str do
+    return [[String alloc] init:str]
 end
 
 +(String) Empty do
@@ -30,12 +33,15 @@ end
     end
 end
 
-+(boolean) __eq:a b:b do
-    return [String Equals:a other:b]
+-(boolean) __eq:b do
+    return [String Equals:self other:b]
 end
 
-- __concat:other do
-    return tostring(self) .. tostring(other)
+-(String) __concat:other do
+    local a, b
+    a = [String ToNativeString:self]
+    b = tostring(other)
+    return [String createWithString:(a .. b)]
 end
 
 - __index:t key:k do
@@ -94,7 +100,7 @@ end
 end
 
 +(boolean) Equals:a other:b do
-    return
+    return 
         ([String IsString:a] and [String IsString:b] and a.string == b.string) or
         ([String IsString:a] and type(b) == "string" and a.string == b) or
         ([String IsString:b] and type(a) == "string" and b.string == a)
@@ -272,20 +278,10 @@ end
     return [[String alloc] init:(self.string:sub(1, start - 1) .. self.string:sub(count + 1))]
 end
 
-- Replace:old new:new do
-    --return [[String alloc] init:[StringHelper Replace:old new:new string:self.string]]
-    local s2 = [self Clone]
-    while [s2 IndexOf:old] ~= -1 do
-        s2 = [s2 Substring:1 
-                len:(s2.string:len() - [s2 IndexOf:old] - 1)] 
-            .. new 
-            .. [s2 Substring:([s2 IndexOf:old] + old:len())]
-    end
-    return s2
-end
-
-- Split:... do
-    return [[String alloc] init:[StringHelper Split:unpack(arg)    string:self.string]]
+-(String) Replace:(String)old new:new do -- lol call native methods, so lazy
+    old = [String ToNativeString:old]
+    if [String IsString:new] then new = [String ToNativeString:new] end
+    return [String createWithString:self.string:gsub(old, new)]
 end
 
 - ToLower do
@@ -372,6 +368,123 @@ end
         s2 = s2 .. s
     end
     return [[String alloc] init:s2]
+end
+
+-(String) Trim:... do
+    if #arg > 0 then
+        return [[String alloc] init:[self TrimChars:arg] ]
+    else
+        return [[String alloc] init:[[self TrimStart] TrimEnd] ]
+    end
+end
+
+-(String) Capitalize do
+    return [[String alloc] init:(self.string:sub(1, 1):upper() .. self.string:sub(2))]
+end
+
+-(number) CountOf:find do
+    if not find then
+        return 0
+    end
+    local count, pos, length = 0, 1, find:len()
+    while true do
+        local p2 = [self IndexOf:find startIndex:pos]
+        if p2 == -1 then
+            break
+        end
+        count = count + 1
+        if pos == p2 then
+            pos = pos + length
+        else
+            pos = pos + (p2 - pos + 1)
+        end
+    end
+    return count
+end
+
+-(String) SwapCase do
+    local new = [[String alloc] init]
+    for i = 1, [self Length] do
+        local char = [String ToNativeString:[self Substring:i len:i] ]
+        new = new .. (char:upper() == char and char:lower() or char:upper())
+    end
+    return new
+end
+
++(String) Join:... do
+    return [[String alloc] init:table.concat(arg, "")]
+end
+
+-(table) SplitLines do
+    local t = [self Split:'\r\n']
+    local ret = { }
+    for k, v in pairs(t) do
+        ret[k] = [v Trim]
+    end
+    return ret
+end
+
+-(table) Split:... do
+    local splitters = arg -- { arg }
+    if #splitters > 0 and type(splitters[1]) == "table" then
+        splitters = splitters[1]
+    end
+    local t = { }
+    local pos = 1
+    local leading = ""
+    local first = true
+    local s = self.string
+    while pos <= s:len() do
+        local flag = false
+        for k, splitter in pairs(splitters) do
+            local found = [self IndexOf:splitter startIndex:pos]
+            if found ~= -1 and found == pos then
+                local nextIndex = [self IndexOf:splitter startIndex:(pos + splitter:len())]
+                if nextIndex == -1 then nextIndex = s:len() + 1 end
+                table.insert(t, s:sub(pos, nextIndex - 1))
+                if first then
+                    table.insert(t, 1, leading)
+                    --t[#t] = leading .. t[#t]
+                    first = false
+                end
+                pos = pos + splitter:len()
+                flag = true
+                break
+            end
+        end
+        if not flag then
+            if first then
+                leading = leading .. s:sub(pos, pos)
+            end
+            pos = pos + 1
+        end
+    end
+    for k, v in pairs(t) do t[k] = [String createWithString:v] end
+    return t
+end
+
+-(number) LastIndexOfAny:... do
+    local index = -1
+    for k, v in pairs(arg) do
+        local i = [self LastIndexOf:v]
+        if i > index or index == -1 then
+            index = i
+        end
+    end
+    return index
+end
+
+-(String) GetTextBetween:d1 endStr:d2 start:start endIndex:end_ do
+    start = start or 1
+    end_ = end_ or [self Length]
+    local a = [self IndexOf:d1 startIndex:start]
+    local b = [self IndexOf:d2 startIndex:a == -1 and start or (a + d1:len())]
+    if a ~= -1 and b ~= -1 then
+        if a <= end_ and b <= end_ then
+            return [self Substring:a + d1:len() len:b - 1]
+        end
+    end
+    return [String Empty]
 end
 
 @end

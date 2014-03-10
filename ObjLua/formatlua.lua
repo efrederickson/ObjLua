@@ -110,8 +110,14 @@ local function Format_Lua(ast)
 			end
 			--print(skipParens, precedence, currentPrecedence)
 		elseif expr.AstType == 'UnopExpr' then
-			out = joinStatementsSafe(out, expr.Op)
-			out = joinStatementsSafe(out, formatExpr(expr.Rhs))
+            if expr.Op ~= '@' then
+                out = joinStatementsSafe(out, expr.Op)
+                out = joinStatementsSafe(out, formatExpr(expr.Rhs))
+            else
+                out = joinStatementsSafe(out, "objlua.getClass('String'):createWithString({['createWithString']=")
+                out = joinStatementsSafe(out, formatExpr(expr.Rhs))
+                out = out .. "})"
+            end
 
 		elseif expr.AstType == 'DotsExpr' then
 			out = out.."..."

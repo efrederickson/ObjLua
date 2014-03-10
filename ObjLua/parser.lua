@@ -25,7 +25,7 @@ local Digits = lookupify{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 local HexDigits = lookupify{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 							'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f'}
 
-local Symbols = lookupify{'+', '-', '*', '/', '^', '%', ',', '{', '}', '[', ']', '(', ')', ';', '#'}
+local Symbols = lookupify{'+', '-', '*', '/', '^', '%', ',', '{', '}', '[', ']', '(', ')', ';', '#', '@'}
 local Scope = require'objlua.Scope'
 
 local Keywords = lookupify{
@@ -337,7 +337,7 @@ local function Lex(src)
 
             elseif c == '@' then
                 -- TODO: more keywords
-                local str = consumeUntil(' \t\r\n(')
+                local str = consumeUntil(' \t\r\n(\'"')
                 if str == "@interface" then
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
                 elseif str == "@implementation" then
@@ -360,8 +360,10 @@ local function Lex(src)
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
                 elseif str == "@alias" then
                     toEmit = { Type = 'ObjLuaSymbol', Data = str }
+                elseif str == '@' then
+                    toEmit = { Type = 'Symbol', Data = str }
                 else
-                    generateError("Unexpected Symbol `"..c.."` in source.", 2)
+                    generateError("Unexpected Symbol '@' in source.", 2)
                 end
 			elseif consume('>=<') then
 				if consume('=') then
@@ -1108,7 +1110,7 @@ local function Parse(src, chunkName)
 	end
 
 
-	local unops = lookupify{'-', 'not', '#'}
+	local unops = lookupify{'-', 'not', '#', '@'}
 	local unopprio = 8
 	local priority = {
 		['+'] = {6,6};

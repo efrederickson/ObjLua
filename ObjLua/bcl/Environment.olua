@@ -1,0 +1,16 @@
+@implementation Environment
+
++(String) NewLine do
+    if [Environment Platform] == 'Windows' then
+        return "\r\n"
+    else
+        return "\n"
+    end
+end
+
++(String) Platform do
+    -- TODO: auto-configure
+    return 'Windows'
+end
+
+@end
